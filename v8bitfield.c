@@ -31,13 +31,17 @@ typedef struct {
 	v8_enumvalue_t		vb_values[16];
 } v8_bitfield_spec_t;
 
+typedef struct {
+	const char		*vv_name;
+	v8_bitfield_spec_t	*vv_descs[32];
+} v8_bitfield_value_t;
+
 /*
  * The specific definitions of these bitfields comes from the version of V8
  * bundled with Node v0.10.24.  You can find these in src/property-details.h
  * inside V8.
  */
-
-v8_bitfield_spec_t v8_property_type = {
+v8_bitfield_spec_t v8_010_property_type = {
 	"PropertyType", V8_BITFIELD_ENUM, 0, 3, {
 		{ "NORMAL",		0 },
 		{ "FIELD",		1 },
@@ -49,10 +53,9 @@ v8_bitfield_spec_t v8_property_type = {
 		{ "NONEXISTENT",	7 },
 		{ NULL }
 	},
-
 };
 
-v8_bitfield_spec_t v8_property_attr = {
+v8_bitfield_spec_t v8_010_property_attr = {
 	"PropertyAttributes", V8_BITFIELD_FLAGS, 3, 3, {
 		{ "NONE",		0 },
 		{ "READ_ONLY",		1 << 0 },
@@ -63,38 +66,112 @@ v8_bitfield_spec_t v8_property_attr = {
 	}
 };
 
-v8_bitfield_spec_t v8_property_deleted = {
+v8_bitfield_spec_t v8_010_property_deleted = {
 	"DeletedField", V8_BITFIELD_FLAGS, 6, 1, {
 		{ "DELETED",	1 },
 		{ NULL }
 	}
 };
 
-v8_bitfield_spec_t v8_property_dictstorage = {
+v8_bitfield_spec_t v8_010_property_dictstorage = {
 	"DictionaryStorage", V8_BITFIELD_RAW, 7, 24
 };
 
-v8_bitfield_spec_t v8_property_descstorage = {
+v8_bitfield_spec_t v8_010_property_descstorage = {
 	"DescriptorStorage", V8_BITFIELD_RAW, 7, 11
 };
 
-v8_bitfield_spec_t v8_property_descptr = {
+v8_bitfield_spec_t v8_010_property_descptr = {
 	"DescriptorPointer", V8_BITFIELD_RAW, 18, 11
 };
 
-typedef struct {
-	const char		*vv_name;
-	v8_bitfield_spec_t	*vv_descs[32];
-} v8_bitfield_value_t;
-
-v8_bitfield_value_t v8_property_details = {
+v8_bitfield_value_t v8_010_property_details = {
 	"PropertyDetails", {
-		&v8_property_type,
-		&v8_property_attr,
-		&v8_property_deleted,
-		&v8_property_dictstorage,
-		&v8_property_descstorage,
-		&v8_property_descptr,
+		&v8_010_property_type,
+		&v8_010_property_attr,
+		&v8_010_property_deleted,
+		&v8_010_property_dictstorage,
+		&v8_010_property_descstorage,
+		&v8_010_property_descptr,
+		NULL
+	}
+};
+
+/*
+ * The following values come from the analogous places in the Node v0.12 source.
+ */
+v8_bitfield_spec_t v8_012_property_type = {
+	"PropertyType", V8_BITFIELD_ENUM, 0, 3, {
+		{ "NORMAL",		0 },
+		{ "FIELD",		1 },
+		{ "CONSTANT",		2 },
+		{ "CALLBACKS",		3 },
+		{ "HANDLER",		4 },
+		{ "INTERCEPTOR",	5 },
+		{ "NONEXISTENT",	6 },
+		{ NULL }
+	}
+};
+
+v8_bitfield_spec_t v8_012_property_attr = {
+	"PropertyAttributes", V8_BITFIELD_FLAGS, 3, 3, {
+		{ "NONE",		0      },
+		{ "READ_ONLY",		1 << 0 },
+		{ "DONT_ENUM",		1 << 1 },
+		{ "DONT_DELETE",	1 << 2 },
+		{ "STRING",		8      },
+		{ "SYMBOLIC",		16     },
+		{ "PRIVATE_SYMBOL",	32     },
+		{ "ABSENT",		64     },
+		{ NULL }
+	}
+};
+
+v8_bitfield_spec_t v8_012_property_deleted = {
+	"DeletedField", V8_BITFIELD_FLAGS, 6, 1, {
+		{ "DELETED",	1 },
+		{ NULL }
+	}
+};
+
+v8_bitfield_spec_t v8_012_property_dictstorage = {
+	"DictionaryStorage", V8_BITFIELD_RAW, 7, 24
+};
+
+v8_bitfield_spec_t v8_012_property_repr = {
+	"Representation", V8_BITFIELD_ENUM, 6, 4, {
+		{ "None",	0 },
+		{ "Integer8",	1 },
+		{ "UInteger8",	2 },
+		{ "Integer16",	3 },
+		{ "UInteger16",	4 },
+		{ "Smi",	5 },
+		{ "Integer32",	6 },
+		{ "Double",	7 },
+		{ "HeapObject",	8 },
+		{ "Tagged",	9 },
+		{ "External",  10 },
+		{ NULL }
+	}
+};
+
+v8_bitfield_spec_t v8_012_property_descptr = {
+	"DescriptorPointer", V8_BITFIELD_RAW, 10, 10
+};
+
+v8_bitfield_spec_t v8_012_property_fieldindex = {
+	"FieldIndex", V8_BITFIELD_RAW, 20, 10
+};
+
+v8_bitfield_value_t v8_012_property_details = {
+	"PropertyDetails", {
+		&v8_012_property_type,
+		&v8_012_property_attr,
+		&v8_012_property_deleted,
+		&v8_012_property_dictstorage,
+		&v8_012_property_repr,
+		&v8_012_property_descptr,
+		&v8_012_property_fieldindex,
 		NULL
 	}
 };
@@ -134,8 +211,8 @@ main(int argc, char *argv[])
 	/* Interpret as an SMI before decoding fields. */
 	value >>= 1;
 	if (opt_c)
-		v8bitfield_dumpcfg(&v8_property_details);
-	v8bitfield_dump_value(&v8_property_details, value);
+		v8bitfield_dumpcfg(&v8_012_property_details);
+	v8bitfield_dump_value(&v8_012_property_details, value);
 }
 
 static void
